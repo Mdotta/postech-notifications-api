@@ -6,12 +6,10 @@ namespace Postech.Notifications.Api.Application.Consumers;
 
 public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
 {
-    private readonly IEmailService _emailService;
     private readonly Serilog.ILogger _logger;
 
-    public UserCreatedConsumer(IEmailService emailService)
+    public UserCreatedConsumer()
     {
-        _emailService = emailService;
         _logger = Serilog.Log.ForContext<UserCreatedConsumer>();
     }
 
@@ -30,12 +28,7 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
                     message.UserId,
                     message.Email,
                     message.Name);
-
-                await _emailService.SendWelcomeEmailAsync(
-                    message.Email,
-                    message.Name,
-                    message.UserId);
-
+                await Task.Delay(1000);
                 _logger.Information(
                     "Email de boas-vindas enviado com sucesso | UserId: {UserId} | Email: {Email}",
                     message.UserId,

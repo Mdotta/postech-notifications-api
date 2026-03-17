@@ -1,6 +1,6 @@
 namespace Postech.Notifications.Api.Domain.Events;
 
-public record UserCreatedEvent
+public record UserCreatedEvent()
 {
     public Guid UserId { get; init; }
     public string Email { get; init; } = string.Empty;
