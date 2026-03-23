@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -15,18 +15,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Debug|x64.Build.0 = Debug|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Debug|x86.Build.0 = Debug|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Release|x64.ActiveCfg = Release|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Release|x64.Build.0 = Release|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Release|x86.ActiveCfg = Release|Any CPU
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402}.Release|x86.Build.0 = Release|Any CPU
 		{FDB072FC-733A-47FC-B883-5DC5899D09B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FDB072FC-733A-47FC-B883-5DC5899D09B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDB072FC-733A-47FC-B883-5DC5899D09B6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -42,9 +30,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{0391AA3D-3B31-6DB3-6772-4D13D17157EF} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{C34BACC2-BC50-4A26-8152-1BD4C01E2402} = {0391AA3D-3B31-6DB3-6772-4D13D17157EF}
 	EndGlobalSection
 EndGlobal
