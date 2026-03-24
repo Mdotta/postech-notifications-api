@@ -1,7 +1,6 @@
 using System.Reflection;
 using MassTransit;
-using Postech.Notifications.Api.Application.Consumers;
-using Postech.Notifications.Api.Domain.Events;
+using Postech.Shared.Contracts.Events;
 
 namespace Postech.Notifications.Api.Infrastructure.MassTransit;
 
@@ -33,7 +32,8 @@ public static class MassTransitConfig
 
                 // Configurar para usar apenas o nome da classe (sem namespace) para compatibilidade entre serviços
                 cfg.Message<UserCreatedEvent>(x => x.SetEntityName("UserCreatedEvent"));
-                
+                cfg.Message<PaymentProcessedEvent>(x => x.SetEntityName("PaymentProcessedEvent"));
+
                 cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                 cfg.PrefetchCount = 16;
 

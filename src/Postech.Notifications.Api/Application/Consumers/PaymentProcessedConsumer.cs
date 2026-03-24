@@ -1,6 +1,6 @@
 using MassTransit;
 using Postech.Notifications.Api.Application.Services;
-using Postech.Notifications.Api.Domain.Events;
+using Postech.Shared.Contracts.Events;
 
 namespace Postech.Notifications.Api.Application.Consumers;
 
@@ -45,7 +45,7 @@ public class PaymentProcessedConsumer : IConsumer<PaymentProcessedEvent>
                 // Por enquanto usando um valor padrão para demonstração
                 var price = 0m;
 
-                if (message.Status == PaymentStatus.Completed)
+                if (message.Status == PaymentProcessedStatus.Completed)
                 {
                     await _emailService.SendPaymentApprovedEmailAsync(
                         userEmail,
@@ -59,7 +59,7 @@ public class PaymentProcessedConsumer : IConsumer<PaymentProcessedEvent>
                         message.OrderId,
                         userEmail);
                 }
-                else if (message.Status == PaymentStatus.Failed)
+                else if (message.Status == PaymentProcessedStatus.Failed)
                 {
                     await _emailService.SendPaymentRejectedEmailAsync(
                         userEmail,
