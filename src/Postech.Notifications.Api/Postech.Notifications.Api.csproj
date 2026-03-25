@@ -24,7 +24,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\postech-shared\Postech.Shared\Postech.Shared.csproj" />
+        <Reference Include="Postech.Shared">
+            <HintPath>..\..\Postech.Shared.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

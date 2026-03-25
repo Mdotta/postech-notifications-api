@@ -4,18 +4,18 @@ using Postech.Shared.Contracts.Events;
 
 namespace Postech.Notifications.Api.Application.Consumers;
 
-public class PaymentProcessedConsumer : IConsumer<PaymentProcessedEvent>
+public class OrderProcessedConsumer : IConsumer<OrderProcessedEvent>
 {
     private readonly IEmailService _emailService;
     private readonly Serilog.ILogger _logger;
 
-    public PaymentProcessedConsumer(IEmailService emailService)
+    public OrderProcessedConsumer(IEmailService emailService)
     {
         _emailService = emailService;
-        _logger = Serilog.Log.ForContext<PaymentProcessedConsumer>();
+        _logger = Serilog.Log.ForContext<OrderProcessedConsumer>();
     }
 
-    public async Task Consume(ConsumeContext<PaymentProcessedEvent> context)
+    public async Task Consume(ConsumeContext<OrderProcessedEvent> context)
     {
         var message = context.Message;
 
@@ -27,11 +27,12 @@ public class PaymentProcessedConsumer : IConsumer<PaymentProcessedEvent>
             try
             {
                 _logger.Information(
-                    "Consumindo PaymentProcessedEvent | OrderId: {OrderId} | UserId: {UserId} | GameId: {GameId} | Status: {Status}",
+                    "Consumindo PaymentProcessedEvent | OrderId: {OrderId} | UserId: {UserId} | GameId: {GameId} | Successful: {Status} | FailureReason: {FailureReason}",
                     message.OrderId,
                     message.UserId,
                     message.GameId,
-                    message.Status);
+                    message.IsSuccessful,
+                    message.FailureReason);
 
                 // TODO: Buscar email do usuário através de uma API de usuários ou banco de dados
                 // Por enquanto, usando um email mock baseado no UserId para testes
@@ -45,7 +46,7 @@ public class PaymentProcessedConsumer : IConsumer<PaymentProcessedEvent>
                 // Por enquanto usando um valor padrão para demonstração
                 var price = 0m;
 
-                if (message.Status == PaymentProcessedStatus.Completed)
+                if (message.IsSuccessful)
                 {
                     await _emailService.SendPaymentApprovedEmailAsync(
                         userEmail,
@@ -59,7 +60,7 @@ public class PaymentProcessedConsumer : IConsumer<PaymentProcessedEvent>
                         message.OrderId,
                         userEmail);
                 }
-                else if (message.Status == PaymentProcessedStatus.Failed)
+                else
                 {
                     await _emailService.SendPaymentRejectedEmailAsync(
                         userEmail,
@@ -73,17 +74,6 @@ public class PaymentProcessedConsumer : IConsumer<PaymentProcessedEvent>
                         message.OrderId,
                         userEmail);
                 }
-                else
-                {
-                    _logger.Information(
-                        "Status de pagamento não requer envio de email | OrderId: {OrderId} | Status: {Status}",
-                        message.OrderId,
-                        message.Status);
-                }
-
-                _logger.Information(
-                    "PaymentProcessedEvent processado com sucesso | OrderId: {OrderId}",
-                    message.OrderId);
             }
             catch (Exception ex)
             {

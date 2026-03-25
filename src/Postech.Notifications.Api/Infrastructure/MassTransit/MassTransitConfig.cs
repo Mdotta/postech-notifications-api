@@ -32,7 +32,7 @@ public static class MassTransitConfig
 
                 // Configurar para usar apenas o nome da classe (sem namespace) para compatibilidade entre serviços
                 cfg.Message<UserCreatedEvent>(x => x.SetEntityName("UserCreatedEvent"));
-                cfg.Message<PaymentProcessedEvent>(x => x.SetEntityName("PaymentProcessedEvent"));
+                cfg.Message<OrderProcessedEvent>(x => x.SetEntityName("OrderProcessedEvent"));
 
                 cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                 cfg.PrefetchCount = 16;
