@@ -1,5 +1,7 @@
 using MassTransit;
 using Postech.Notifications.Api.Application.Services;
+using Postech.Notifications.Api.Infrastructure.MongoDB.Documents;
+using Postech.Notifications.Api.Infrastructure.MongoDB.Repositories;
 using Postech.Shared.Contracts.Events;
 
 namespace Postech.Notifications.Api.Application.Consumers;
@@ -7,11 +9,13 @@ namespace Postech.Notifications.Api.Application.Consumers;
 public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
 {
     private readonly IEmailService _emailService;
+    private readonly IEventLogRepository? _eventLogRepository;
     private readonly Serilog.ILogger _logger;
 
-    public UserCreatedConsumer(IEmailService emailService)
+    public UserCreatedConsumer(IEmailService emailService, IEventLogRepository? eventLogRepository = null)
     {
         _emailService = emailService;
+        _eventLogRepository = eventLogRepository;
         _logger = Serilog.Log.ForContext<UserCreatedConsumer>();
     }
 
@@ -30,11 +34,26 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
                     message.UserId,
                     message.Email,
                     message.Name);
+
                 await _emailService.SendWelcomeEmailAsync(message.Email, message.Name, message.UserId);
+
                 _logger.Information(
                     "Email de boas-vindas enviado com sucesso | UserId: {UserId} | Email: {Email}",
                     message.UserId,
                     message.Email);
+
+                await SaveEventLogAsync(new EventLogDocument
+                {
+                    EventType = "UserCreated",
+                    Status = "Success",
+                    CorrelationId = context.CorrelationId,
+                    Payload = new Dictionary<string, string>
+                    {
+                        ["userId"] = message.UserId.ToString(),
+                        ["email"] = message.Email,
+                        ["name"] = message.Name
+                    }
+                }, context.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -43,8 +62,37 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
                     "Erro ao processar UserCreatedEvent | UserId: {UserId} | Email: {Email}",
                     message.UserId,
                     message.Email);
+
+                await SaveEventLogAsync(new EventLogDocument
+                {
+                    EventType = "UserCreated",
+                    Status = "Failed",
+                    CorrelationId = context.CorrelationId,
+                    Payload = new Dictionary<string, string>
+                    {
+                        ["userId"] = message.UserId.ToString(),
+                        ["email"] = message.Email,
+                        ["name"] = message.Name
+                    },
+                    ErrorMessage = ex.Message,
+                    ErrorType = ex.GetType().Name
+                }, context.CancellationToken);
+
                 throw;
             }
+        }
+    }
+
+    private async Task SaveEventLogAsync(EventLogDocument document, CancellationToken cancellationToken)
+    {
+        if (_eventLogRepository is null) return;
+        try
+        {
+            await _eventLogRepository.InsertAsync(document, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "Falha ao salvar event log no MongoDB. Processamento do evento não foi afetado.");
         }
     }
 }

@@ -28,6 +28,7 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddMassTransitServices(builder.Configuration);
 builder.Services.AddApplicationServices();
+builder.Services.AddMongoDb(builder.Configuration);
 
 var app = builder.Build();
 
