@@ -1,5 +1,7 @@
 using MassTransit;
 using Postech.Notifications.Api.Application.Services;
+using Postech.Notifications.Api.Infrastructure.MongoDB.Documents;
+using Postech.Notifications.Api.Infrastructure.MongoDB.Repositories;
 using Postech.Shared.Contracts.Events;
 
 namespace Postech.Notifications.Api.Application.Consumers;
@@ -7,11 +9,13 @@ namespace Postech.Notifications.Api.Application.Consumers;
 public class OrderProcessedConsumer : IConsumer<OrderProcessedEvent>
 {
     private readonly IEmailService _emailService;
+    private readonly IEventLogRepository? _eventLogRepository;
     private readonly Serilog.ILogger _logger;
 
-    public OrderProcessedConsumer(IEmailService emailService)
+    public OrderProcessedConsumer(IEmailService emailService, IEventLogRepository? eventLogRepository = null)
     {
         _emailService = emailService;
+        _eventLogRepository = eventLogRepository;
         _logger = Serilog.Log.ForContext<OrderProcessedConsumer>();
     }
 
@@ -74,6 +78,21 @@ public class OrderProcessedConsumer : IConsumer<OrderProcessedEvent>
                         message.OrderId,
                         userEmail);
                 }
+
+                await SaveEventLogAsync(new EventLogDocument
+                {
+                    EventType = "OrderProcessed",
+                    Status = "Success",
+                    CorrelationId = context.CorrelationId,
+                    Payload = new Dictionary<string, string>
+                    {
+                        ["orderId"] = message.OrderId.ToString(),
+                        ["userId"] = message.UserId.ToString(),
+                        ["gameId"] = message.GameId.ToString(),
+                        ["isSuccessful"] = message.IsSuccessful.ToString(),
+                        ["failureReason"] = message.FailureReason ?? string.Empty
+                    }
+                }, context.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -81,8 +100,37 @@ public class OrderProcessedConsumer : IConsumer<OrderProcessedEvent>
                     ex,
                     "Erro ao processar PaymentProcessedEvent | OrderId: {OrderId}",
                     message.OrderId);
+
+                await SaveEventLogAsync(new EventLogDocument
+                {
+                    EventType = "OrderProcessed",
+                    Status = "Failed",
+                    CorrelationId = context.CorrelationId,
+                    Payload = new Dictionary<string, string>
+                    {
+                        ["orderId"] = message.OrderId.ToString(),
+                        ["userId"] = message.UserId.ToString(),
+                        ["gameId"] = message.GameId.ToString()
+                    },
+                    ErrorMessage = ex.Message,
+                    ErrorType = ex.GetType().Name
+                }, context.CancellationToken);
+
                 throw;
             }
+        }
+    }
+
+    private async Task SaveEventLogAsync(EventLogDocument document, CancellationToken cancellationToken)
+    {
+        if (_eventLogRepository is null) return;
+        try
+        {
+            await _eventLogRepository.InsertAsync(document, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "Falha ao salvar event log no MongoDB. Processamento do evento não foi afetado.");
         }
     }
 }
