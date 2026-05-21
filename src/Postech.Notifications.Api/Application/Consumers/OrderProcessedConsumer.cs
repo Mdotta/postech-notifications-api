@@ -1,5 +1,6 @@
 using MassTransit;
 using Postech.Notifications.Api.Application.Services;
+using Postech.Notifications.Api.Infrastructure.Metrics;
 using Postech.Notifications.Api.Infrastructure.MongoDB.Documents;
 using Postech.Notifications.Api.Infrastructure.MongoDB.Repositories;
 using Postech.Shared.Contracts.Events;
@@ -59,6 +60,8 @@ public class OrderProcessedConsumer : IConsumer<OrderProcessedEvent>
                         message.GameId,
                         price);
 
+                    NotificationsMetrics.EmailsSent.WithLabels("approved").Inc();
+
                     _logger.Information(
                         "Email de pagamento aprovado enviado | OrderId: {OrderId} | Email: {Email}",
                         message.OrderId,
@@ -72,6 +75,8 @@ public class OrderProcessedConsumer : IConsumer<OrderProcessedEvent>
                         message.OrderId,
                         message.GameId,
                         price);
+
+                    NotificationsMetrics.EmailsSent.WithLabels("rejected").Inc();
 
                     _logger.Information(
                         "Email de pagamento rejeitado enviado | OrderId: {OrderId} | Email: {Email}",
@@ -127,10 +132,12 @@ public class OrderProcessedConsumer : IConsumer<OrderProcessedEvent>
         try
         {
             await _eventLogRepository.InsertAsync(document, cancellationToken);
+            NotificationsMetrics.EventLogsPersisted.WithLabels("success").Inc();
         }
         catch (Exception ex)
         {
             _logger.Warning(ex, "Falha ao salvar event log no MongoDB. Processamento do evento não foi afetado.");
+            NotificationsMetrics.EventLogsPersisted.WithLabels("failure").Inc();
         }
     }
 }

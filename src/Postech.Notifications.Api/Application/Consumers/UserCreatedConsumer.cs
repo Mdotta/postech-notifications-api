@@ -1,5 +1,6 @@
 using MassTransit;
 using Postech.Notifications.Api.Application.Services;
+using Postech.Notifications.Api.Infrastructure.Metrics;
 using Postech.Notifications.Api.Infrastructure.MongoDB.Documents;
 using Postech.Notifications.Api.Infrastructure.MongoDB.Repositories;
 using Postech.Shared.Contracts.Events;
@@ -36,6 +37,8 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
                     message.Name);
 
                 await _emailService.SendWelcomeEmailAsync(message.Email, message.Name, message.UserId);
+
+                NotificationsMetrics.EmailsSent.WithLabels("welcome").Inc();
 
                 _logger.Information(
                     "Email de boas-vindas enviado com sucesso | UserId: {UserId} | Email: {Email}",
@@ -89,10 +92,12 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
         try
         {
             await _eventLogRepository.InsertAsync(document, cancellationToken);
+            NotificationsMetrics.EventLogsPersisted.WithLabels("success").Inc();
         }
         catch (Exception ex)
         {
             _logger.Warning(ex, "Falha ao salvar event log no MongoDB. Processamento do evento não foi afetado.");
+            NotificationsMetrics.EventLogsPersisted.WithLabels("failure").Inc();
         }
     }
 }

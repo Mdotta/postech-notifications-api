@@ -1,5 +1,6 @@
 using Postech.Notifications.Api.Extensions;
 using Postech.Notifications.Api.Infrastructure.MassTransit;
+using Prometheus;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -41,5 +42,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
+app.MapMetrics("/metrics").AllowAnonymous();
+app.UseHttpMetrics(options => options.AddCustomLabel("service", _ => "notifications-api"));
 
 app.Run();
