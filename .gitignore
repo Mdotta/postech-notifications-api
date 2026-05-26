@@ -55,3 +55,10 @@ nunit-*.xml
 
 .idea/
 .vs
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Private keys
+*.pem
