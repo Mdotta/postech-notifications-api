@@ -95,7 +95,7 @@ src/Postech.Notifications.Lambda/   # Variante Lambda para deploy AWS
 
 ```bash
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-ECR="${ACCOUNT}.dkr.ecr.us-east-1.amazonaws.com/tf-postech-postech-notifications-lambda"
+ECR="${ACCOUNT}.dkr.ecr.us-east-1.amazonaws.com/tf-postech-notifications-lambda"
 LAMBDA_DIR="src/Postech.Notifications.Lambda"
 
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin "${ACCOUNT}.dkr.ecr.us-east-1.amazonaws.com"
