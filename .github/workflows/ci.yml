@@ -1,0 +1,56 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore src/Postech.Notifications.Lambda/Postech.Notifications.Lambda.csproj
+
+      - name: Build
+        run: dotnet build src/Postech.Notifications.Lambda/Postech.Notifications.Lambda.csproj --no-restore --configuration Release
+
+  docker:
+    needs: build-test
+    runs-on: ubuntu-latest
+    environment: master
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+          AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
+        run: >
+          aws ecr get-login-password
+          | docker login --username AWS --password-stdin
+          ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: src/Postech.Notifications.Lambda
+          push: true
+          tags: |
+            ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:latest
+            ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO }}:${{ env.IMAGE_TAG }}
+          platforms: linux/amd64
